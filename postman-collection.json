@@ -1,0 +1,178 @@
+{
+  "info": {
+    "name": "File System CRUD API",
+    "description": "Complete test collection for File System CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/fs",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create File",
+      "item": [
+        {
+          "name": "Create Simple Text File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"hello.txt\",\n  \"content\": \"Hello World! This is a test file created via API.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["create"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/create",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["create"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"message\": \"File created successfully!\",\n    \"data\": {\n        \"success\": true,\n        \"message\": \"File 'hello.txt' created successfully\",\n        \"filename\": \"hello.txt\",\n        \"size\": 47,\n        \"path\": \"/path/to/files/hello.txt\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create JSON File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"user.json\",\n  \"content\": \"{\\\"name\\\":\\\"John Doe\\\",\\\"age\\\":30,\\\"email\\\":\\\"john@example.com\\\"}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read File",
+      "item": [
+        {
+          "name": "Read File",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/read?filename=hello.txt",
+              "host": ["{{baseUrl}}"],
+              "path": ["read"],
+              "query": [
+                {
+                  "key": "filename",
+                  "value": "hello.txt"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Append to File",
+      "item": [
+        {
+          "name": "Append Content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"hello.txt\",\n  \"content\": \"\\n\\nThis is appended content!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/append",
+              "host": ["{{baseUrl}}"],
+              "path": ["append"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Files",
+      "item": [
+        {
+          "name": "List All Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["list"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete File",
+      "item": [
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": \"hello.txt\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["delete"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
