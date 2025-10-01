@@ -1,75 +1,63 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+import dotenv from "dotenv"
+import express from "express"
+import cors from "cors"
+import helmet from "helmet"
+import morgan from "morgan"
+import userRoutes from "./src/routes/user.routes.js"
 
-// Import routes
-const fsRoutes = require('./routes/fsRoutes');
+// Import API response utilities
+import { apiSuccess, apiError } from "./src/utils/apiResponse.js"
+import { errorHandler } from "./src/middleware/error.middleware.mjs"
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// Load environment variables from .env file in the root directory
+dotenv.config()
+
+import connectDB from "./src/db/index.js"
+const app = express()
+const PORT = process.env.PORT || 3000
 
 // Middleware setup
 // 1. Security middleware - helmet helps secure Express apps by setting various HTTP headers
-app.use(helmet());
+app.use(helmet())
 
 // 2. CORS middleware - allows cross-origin requests (useful for Postman/frontend)
-app.use(cors());
+app.use(cors())
 
 // 3. Morgan middleware - logs HTTP requests to console (great for debugging)
-app.use(morgan('dev'));
+app.use(morgan("dev"))
 
 // 4. Body parsing middleware - parses JSON bodies from requests
 // This is crucial for receiving data from Postman requests
-app.use(express.json({ limit: '10mb' })); // Allows JSON payloads up to 10MB
-app.use(express.urlencoded({ extended: true })); // Allows form data
+app.use(express.json({ limit: "10mb" })) // Allows JSON payloads up to 10MB
+app.use(express.urlencoded({ extended: true })) // Allows form data
+
+connectDB()
+  .then(() => {
+    app.on("error", (error) => {
+      console.log("Error connecting to database", error)
+      throw error
+    })
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`Server is running on port ${process.env.PORT}`)
+    })
+  })
+  .catch((err) => console.log("Error connecting to database", err))
 
 // Routes
 // All file system operations will be available under /api/fs
-app.use('/api/fs', fsRoutes);
+app.use("/api/users", userRoutes)
+
+// Global Error Handling Middleware
+// This should be the last middleware registered
+app.use(errorHandler)
 
 // Health check route - useful to verify server is running
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'File System CRUD Server is running!',
-    timestamp: new Date().toISOString()
-  });
-});
+app.get("/health", (req, res) => {
+  return apiSuccess(res, 200, "File System CRUD Server is running!", {
+    status: "OK",
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
+  })
+})
 
-// 404 handler - catches any routes that don't exist
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Route not found',
-    message: `The route ${req.originalUrl} does not exist`,
-    availableRoutes: {
-      health: 'GET /health',
-      fileOperations: 'All routes under /api/fs/*'
-    }
-  });
-});
-
-// Global error handler - catches any errors thrown in the application
-app.use((error, req, res, next) => {
-  console.error('Error occurred:', error);
-
-  res.status(error.status || 500).json({
-    error: error.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-  });
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 File System CRUD Server is running on port ${PORT}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/health`);
-  console.log(`📁 File operations: http://localhost:${PORT}/api/fs`);
-  console.log(`\n📖 Available endpoints:`);
-  console.log(`   POST   /api/fs/create  - Create a new file`);
-  console.log(`   GET    /api/fs/read    - Read a file`);
-  console.log(`   PUT    /api/fs/append  - Append to a file`);
-  console.log(`   DELETE /api/fs/delete  - Delete a file`);
-  console.log(`   GET    /api/fs/list    - List files in directory`);
-});
-
-module.exports = app;
+export default app
