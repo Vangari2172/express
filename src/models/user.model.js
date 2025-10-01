@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // 1. Define the User Schema
-// This is the structure of the document that will be stored in the User collection.
 const userSchema = new mongoose.Schema(
   {
-    // Mongoose automatically creates a unique `_id` for each document.
     name: {
       type: String,
       required: [true, 'Name is required.'],
@@ -14,16 +13,21 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'Email is required.'],
-      unique: true, // Ensures no two users can have the same email.
+      unique: true,
       lowercase: true,
       trim: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address.'],
     },
+    password: {
+      type: String,
+      required: [true, 'Password is required.'],
+      minlength: [8, 'Password must be at least 8 characters long.'],
+    },
     phone: {
       type: String,
+      required: [true, 'Phone number is required.'],
       trim: true,
-      // Optional: Add a match validator for phone numbers if needed
-      // match: [/^\d{10}$/, 'Phone number must be 10 digits.']
+      match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid phone number.'], // E.164 format
     },
     age: {
       type: Number,
@@ -32,15 +36,28 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    // 2. Define Schema Options
-    // `timestamps: true` automatically adds `createdAt` and `updatedAt` fields.
     timestamps: true,
   }
 );
 
-// 3. Create the User Model
-// A Mongoose model provides an interface to the database for creating, querying, updating, and deleting documents.
-// The first argument is the singular name of the collection your model is for.
-// Mongoose automatically looks for the plural, lowercased version of your model name.
-// So, for 'User', the collection will be 'users'.
+// 2. Middleware to hash the password before saving
+userSchema.pre('save', async function (next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// 3. Method to compare candidate password with the stored hashed password
+userSchema.methods.isPasswordCorrect = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// 4. Create the User Model
 export const User = mongoose.model('User', userSchema);

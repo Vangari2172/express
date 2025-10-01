@@ -6,12 +6,18 @@ import { User } from '../models/user.model.js';
  * @returns {Promise<object>} The newly created user document.
  */
 export const createUserService = async (userData) => {
-  // `User.create` is a Mongoose helper that builds and saves a new document.
-  // It automatically runs the validations we defined in the schema.
-  // If validation fails or if the email is not unique, it will throw an error.
-  const newUser = await User.create(userData)
-  return newUser
-}
+  // Check if a user with the same email already exists
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    const error = new Error('A user with this email address already exists.');
+    error.statusCode = 409; // Conflict
+    throw error;
+  }
+
+  // `User.create` builds and saves a new document, running schema validations
+  const newUser = await User.create(userData);
+  return newUser;
+};
 
 /**
  * Retrieves all users from the database.

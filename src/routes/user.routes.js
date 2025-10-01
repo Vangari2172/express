@@ -7,6 +7,7 @@ import {
   deleteUser,
 } from '../controllers/user.controller.js';
 import { checkUserExists } from '../middleware/user.middleware.mjs';
+import { validateCreateUser, validateUpdateUser } from '../middlewares/validation.middleware.js';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ const router = Router();
 // Maps HTTP methods to controller functions.
 
 // POST /api/users
-router.route('/').post(createUser);
+router.route('/').post(validateCreateUser, createUser);
 
 // GET /api/users
 router.route('/').get(getAllUsers);
@@ -29,7 +30,7 @@ router.use('/:id', checkUserExists);
 // GET, PUT, and DELETE /api/users/:id
 router.route('/:id')
   .get(getUserById)    // Maps to getUserById controller
-  .put(updateUser)     // Maps to updateUser controller
+  .put(validateUpdateUser, updateUser)     // Maps to updateUser controller
   .delete(deleteUser); // Maps to deleteUser controller
 
 export default router;
